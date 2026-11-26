@@ -1,0 +1,9 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="177" height="14.7279" viewBox="0 0 177 14.7279" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path id="Arrow 16" d="M0 7.36396V8.36396H176V7.36396V6.36396H0V7.36396ZM176.707 8.07107C177.098 7.68054 177.098 7.04738 176.707 6.65685L170.343 0.292893C169.953 -0.097631 169.319 -0.097631 168.929 0.292893C168.538 0.683418 168.538 1.31658 168.929 1.70711L174.586 7.36396L168.929 13.0208C168.538 13.4113 168.538 14.0445 168.929 14.435C169.319 14.8256 169.953 14.8256 170.343 14.435L176.707 8.07107Z" fill="url(#paint0_linear_0_365)"/>
+<defs>
+<linearGradient id="paint0_linear_0_365" x1="0" y1="7.86396" x2="176" y2="7.86396" gradientUnits="userSpaceOnUse">
+<stop stop-color="#FF4F41" stop-opacity="0"/>
+<stop offset="1" stop-color="#FF4F41"/>
+</linearGradient>
+</defs>
+</svg>
