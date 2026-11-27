@@ -7,10 +7,15 @@ import SiteFooter from '../components/SiteFooter.vue';
 // Shared props from HandleInertiaRequests (available on every page)
 const page = usePage();
 const status = computed(() => page.props.flash.status);
+
+defineProps({
+    // Homepage draws its own header and footer from the design.
+    bare: { type: Boolean, default: false },
+});
 </script>
 
 <template>
-    <SiteHeader />
+    <SiteHeader v-if="!bare" />
 
     <!-- One-time flash message, e.g. ->with('status', '...') in a controller -->
     <div v-if="status" class="flash">
@@ -22,5 +27,5 @@ const status = computed(() => page.props.flash.status);
         <slot />
     </main>
 
-    <SiteFooter />
+    <SiteFooter v-if="!bare" />
 </template>

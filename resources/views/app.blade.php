@@ -7,10 +7,11 @@
     {{-- Google Fonts: Montserrat (headings) + Poppins (body and buttons) --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Poppins:wght@300;400;500;600&family=Urbanist:wght@500;700&display=swap" rel="stylesheet">
 
     {{-- Plain CSS served from public/css/style.css --}}
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/home.css') }}?v={{ filemtime(public_path('css/home.css')) }}">
 
     {{-- Vue app bundle (Vite) --}}
     @vite('resources/js/app.js')

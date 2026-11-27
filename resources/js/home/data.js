@@ -1,0 +1,55 @@
+const image = (file) => `/images/${file}`;
+
+export const assets = {
+  hero: image("78c1a.png"),
+  logo: image("8eeb8.png"),
+  arrow: image("de13a.svg"),
+  arrowPill: image("79a07.svg"),
+  arrowUp: image("a995d.png"),
+  check: image("brush-check.png"),
+  crazyLine: image("40e74.svg"),
+  attentionCross: image("attention-cross.svg"),
+  quoteScribble: image("quotes-big.png"),
+  stepRing: image("e398f.svg"),
+  stepFill: image("a5ce9.svg"),
+  stepArrow: image("c35ac.svg"),
+  stars: image("f6ee8.svg"),
+  quoteMark: image("f0760.svg"),
+  instagram: image("cf550.svg"),
+  linkedin: image("222bd.svg"),
+  divider: image("79248.svg"),
+  founders: image("45d2e.png"),
+};
+
+export const stats = [
+  {
+    value: "443",
+    suffix: "%",
+    suffixSize: 88,
+    text: "Year-over-year revenue growth on Google",
+    logo: image("57b56.png"),
+    logoAlt: "Retro Kid",
+    logoWidth: 152,
+    logoHeight: 29,
+  },
+  {
+    value: "142",
+    suffix: "%",
+    suffixSize: 88,
+    text: "Increase in Total Store Revenue",
+    logo: image("689c6.png"),
+    logoAlt: "made+",
+    logoWidth: 166,
+    logoHeight: 26,
+  },
+  {
+    value: "$9.6",
+    suffix: "M",
+    suffixSize: 72,
+    text: "In total revenue since partnership",
+    logo: image("e3760.png"),
+    logoAlt: "Client logo",
+    logoWidth: 107,
+    logoHeight: 37,
+  },
+];

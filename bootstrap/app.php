@@ -4,6 +4,7 @@ use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -17,11 +18,24 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleInertiaRequests::class,
         ]);
 
-        // Where the 'auth' middleware sends visitors who are not logged in
-        $middleware->redirectGuestsTo('/login');
+        // Public pages use /login. The Filament panel has its own login at /admin/login.
+        $middleware->redirectGuestsTo(function (Request $request) {
+            if ($request->is('admin') || $request->is('admin/*')) {
+                return '/admin/login';
+            }
 
-        // Where the 'guest' middleware sends users who are already logged in
-        $middleware->redirectUsersTo('/account');
+            return '/login';
+        });
+
+        // A signed-in visitor who opens a guest page goes to their account,
+        // except on the backoffice, where they go to the dashboard.
+        $middleware->redirectUsersTo(function (Request $request) {
+            if ($request->is('admin') || $request->is('admin/*')) {
+                return '/admin';
+            }
+
+            return '/account';
+        });
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

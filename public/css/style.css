@@ -864,3 +864,171 @@ strong {
     object-fit: cover;
     pointer-events: none;
 }
+
+/* ==========================================================================
+   Testimonials — "Madly Ever After"
+   Gradient and card geometry from the homepage frame in Figma.
+   ========================================================================== */
+
+.testimonials__band {
+    margin: 0 12px;
+    padding: 48px 0 96px;
+    border-radius: 10px;
+    background: linear-gradient(to bottom, #ff5148 0%, #681f1b 49.352%, #000000 100%);
+    overflow: hidden;
+}
+
+.testimonials__title {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-size: clamp(2rem, 4.5vw, 64px);
+    font-weight: 700;
+    line-height: 0.94;
+    text-align: center;
+    text-transform: uppercase;
+    color: var(--color-white);
+}
+
+.testimonials__scroller {
+    margin-top: 40px;
+    overflow: hidden;
+    cursor: grab;
+    touch-action: pan-y;
+    user-select: none;
+    outline: none;
+}
+
+.testimonials__scroller.is-dragging {
+    cursor: grabbing;
+}
+
+.testimonials__scroller:focus-visible {
+    outline: 2px solid var(--color-white);
+    outline-offset: -4px;
+}
+
+.testimonials__track {
+    display: flex;
+    align-items: flex-start;
+    gap: 19px;
+    width: max-content;
+    padding: 0 16px;
+    will-change: transform;
+}
+
+.quote-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    flex: 0 0 auto;
+    width: min(355px, 82vw);
+    padding: 40px;
+    background: var(--color-black);
+    color: var(--color-white);
+    font-family: var(--font-heading);
+    border-radius: 10px 10px 10px 0;
+}
+
+.quote-card__person {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.quote-card__photo {
+    flex: 0 0 106px;
+    width: 106px;
+    height: 106px;
+    max-width: none;
+    border-radius: 50%;
+    object-fit: cover;
+    pointer-events: none;
+}
+
+.quote-card__meta {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    min-width: 0;
+}
+
+.quote-card__stars {
+    width: 103px;
+    height: 17px;
+    max-width: 100%;
+    pointer-events: none;
+}
+
+.quote-card__name {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--color-white);
+}
+
+.quote-card__role,
+.quote-card__text {
+    margin: 0;
+    font-weight: 400;
+    color: var(--color-white);
+    white-space: pre-line;
+}
+
+.quote-card__role {
+    font-size: 12px;
+    line-height: 1.25;
+}
+
+.quote-card__text {
+    font-size: 14px;
+    line-height: 1.25;
+}
+
+.quote-card__mark {
+    position: absolute;
+    top: 158px;
+    left: 42px;
+    width: 19px;
+    height: 15px;
+    max-width: none;
+    pointer-events: none;
+}
+
+.quote-card__logo {
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+    object-position: left center;
+    pointer-events: none;
+}
+
+.quote-card__logo--crop {
+    position: relative;
+    flex: 0 0 auto;
+    overflow: hidden;
+}
+
+.quote-card__logo--crop img {
+    position: absolute;
+    max-width: none;
+    pointer-events: none;
+}
+
+@media (min-width: 1024px) {
+    .testimonials__band {
+        margin: 0 20px;
+        padding: 72px 0 182px;
+    }
+
+    .testimonials__scroller {
+        margin-top: 70px;
+    }
+
+    .testimonials__track {
+        padding: 0 92px;
+    }
+}

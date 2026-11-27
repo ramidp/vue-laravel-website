@@ -1,18 +1,19 @@
 # CLAUDE.md — madhub-laravel
 
-Learning project to understand Laravel by building a simple MADHUB-styled website with data coming from a database.
-Context: the team wants to move away from WordPress and page builders toward custom code that can be built with AI.
+Practice project for the team's new stack: **Laravel + Inertia + Vue + SSR + Filament**, replacing WordPress and page builders with custom code built with AI.
+The generic, reusable process lives in the `laravel-vue-site-builder` skill and the "Laravel + Inertia + Vue + Filament Stack Guide" doc. This file describes **this** project.
 
 ---
 
-## Working rules (how to collaborate on this project)
+## Working rules
 
 - Never take action, assume next steps or complete tasks unless explicitly asked. If unclear, ask "¿Qué vamos a hacer?" and wait.
 - Always provide the full code of any file that changes, never partial snippets.
 - All code, code comments and site content are written in English (conversation is in Spanish).
 - Reproduce any string the user provides exactly as given.
-- The user knows the logic (Liquid / PHP / React); he describes what he wants and Claude writes it in Blade/Laravel.
-- Keep it simple: no Tailwind, no npm, no build step.
+- The user knows the logic (Liquid / PHP / React / Vue); he describes what he wants and Claude writes it.
+- No Tailwind in the public site: plain CSS files in `public/css/`.
+- The user runs PHP, Composer and npm on his Windows machine; Claude gives exact commands when it cannot run them.
 
 ---
 
@@ -20,183 +21,168 @@ Context: the team wants to move away from WordPress and page builders toward cus
 
 | Item | Choice |
 |---|---|
-| Framework | Laravel 12 (`laravel/framework ^12.0`) |
-| PHP | 8.2.12 from XAMPP (`C:\xamppNew\php\php.exe`) — Laravel 13 needs PHP 8.3+, so we stay on 12 |
-| Composer | 2.8.12 |
-| Database | SQLite, single file `database/database.sqlite` (`DB_CONNECTION=sqlite`). No MySQL / XAMPP server needed |
-| Sessions | Stored in the database (`SESSION_DRIVER=database`, `SESSION_LIFETIME=120`) |
-| Templates | Blade (`resources/views/*.blade.php`) |
-| CSS | Plain CSS in `public/css/style.css` (CSS variables in `:root`). Tailwind, Vite, SCSS and `package.json` were removed on purpose |
-| JS | None yet. If needed: `public/js/main.js` loaded with `<script src="{{ asset('js/main.js') }}" defer></script>`, libraries via CDN (e.g. Swiper) |
-| Fonts | Google Fonts: Montserrat (headings) + Poppins (body, buttons) |
-| Local server | `php artisan serve` → http://127.0.0.1:8000 (Apache from XAMPP is not used) |
-| Project path | `C:\Users\ramdp\OneDrive\Escritorio\Big Data\HTML\Laravel Projects\madhub-laravel` (inside OneDrive: `vendor/` sync can be slow; use a non-OneDrive folder for real projects) |
+| Backend | Laravel 12 (`laravel/framework ^12.0`) |
+| PHP | 8.2.12 from XAMPP (`C:\xamppNew\php\php.exe`). Laravel 13 needs 8.3, so the project stays on 12 |
+| Database | SQLite, file `database/database.sqlite` (`DB_CONNECTION=sqlite`) |
+| Sessions | Database (`SESSION_DRIVER=database`) |
+| Bridge | Inertia.js v3 (`inertiajs/inertia-laravel ^3.8`, `@inertiajs/vue3 ^3`, `@inertiajs/vite ^3`) |
+| Frontend | Vue 3, compiled by Vite 8 (Node 20.19+ required) |
+| SSR | Inertia SSR through the `@inertiajs/vite` plugin (automatic in dev; `php artisan inertia:start-ssr` after a build) |
+| Admin panel | Filament (`filament/filament ^4.0` in composer.json) — **being installed**, panel not set up yet |
+| CSS | Plain CSS: `public/css/style.css` (global), `home.css`, `contact.css` (page styles) |
+| Fonts | Google Fonts: Montserrat, Poppins, Urbanist |
+| Dev DB browser | Adminer at `/adminer.php` (local only, gitignored) |
 
-The user dislikes XAMPP; only its `php.exe` is used. Laravel Herd is the alternative if PHP needs upgrading.
+Only XAMPP's `php.exe` is used (no Apache, no MySQL). If a terminal reports "requires a PHP version >= 8.2.0", it is running another PHP (check `where php`); fix the Windows Path or call `C:\xamppNew\php\php.exe` directly. Filament needs the `intl` extension enabled in that PHP's `php.ini`.
 
----
-
-## Visual style (reference: MADHUB Next.js site at http://localhost:3000)
-
-- Black background, primary red `#ff4f41` (`--color-primary`), dark surfaces `#0d0d0d` / `#141414`.
-- Headings: Montserrat, uppercase, heavy weights, one word highlighted in red via `<span>`.
-- Buttons: Poppins; `.btn--primary` (red), `.btn--outline`, `.btn--ghost`, `.btn--dark`, `.btn--lg` (pill), `.btn--block`.
-- Cards with dark gradient and reddish border. BEM class naming.
-- Hero: "WE ENCOURAGE" in red + "CRAZY" white over a skewed red block, red radial glow + subtle grid background (CSS only).
-- No animated sections (logo marquee etc. intentionally skipped). Only hover transitions.
+The project folder is inside OneDrive: `vendor/` and `node_modules/` sync slowly. Use a non-synced folder for real projects.
 
 ---
 
-## Project structure (custom parts)
+## How data reaches a page
+
+1. **Migration** creates the table (structure only).
+2. **Seeder** inserts sample rows.
+3. **Model** represents the table; `scopeVisible()` = active rows ordered by `sort_order`.
+4. **Controller** queries the model, maps rows to plain arrays and returns `Inertia::render('PageName', props)`.
+5. **Route** in `routes/web.php` points a URL to the controller.
+6. **Vue page** in `resources/js/pages/` receives the props and renders them (SSR on the first visit).
+
+Shared props on every page (`app/Http/Middleware/HandleInertiaRequests.php`): `auth.user` (id, name, email) and `flash` (`status`, `contact_success`, `newsletter_success`).
+
+---
+
+## Project structure
 
 ```
-routes/web.php                          Routes (home, auth, account)
-bootstrap/app.php                       Middleware redirects (guests → /login, users → /account)
+routes/web.php                               All URLs
+bootstrap/app.php                            Inertia middleware + auth redirects (guests → /login, users → /account)
+app/Providers/AppServiceProvider.php         Forces APP_URL as root URL when it is https (tunnel)
+app/Http/Middleware/HandleInertiaRequests.php
+app/Http/Controllers/HomeController.php      Home page: testimonials from the database
+app/Http/Controllers/ContactController.php   /contact page + contact form submission
+app/Http/Controllers/NewsletterController.php
+app/Http/Controllers/AccountController.php
+app/Http/Controllers/Auth/RegisterController.php, LoginController.php
+app/Models/                                  Service, TeamMember, Testimonial, ContactMessage, Subscriber, User
 
-app/Http/Controllers/HomeController.php        Loads services + team members for the homepage
-app/Http/Controllers/Auth/RegisterController.php  Register (validate, create user, log in)
-app/Http/Controllers/Auth/LoginController.php     Login, logout
+resources/views/app.blade.php                The only page Blade view: <head>, fonts, CSS, @vite, @inertiaHead, @inertia
+resources/js/app.js                          createInertiaApp (title template "Page | MADHUB", progress bar)
+resources/js/layouts/AppLayout.vue           Header + flash message + <slot /> + footer
+resources/js/pages/                          Home, Contact, Account, auth/Login, auth/Register
+resources/js/components/SiteHeader.vue, SiteFooter.vue
+resources/js/components/home/                LogoMarquee, WorkMarquee, ServicesTabs (home page pieces)
+resources/js/components/sections/            TestimonialsSection (used on Home); the other files here are from the first version of the home
+resources/js/home/data.js                    Static home content: assets, logos, stats, work rows, services tabs, journey, platforms, team
 
-app/Models/Service.php                  scopeVisible() = active + ordered by sort_order
-app/Models/TeamMember.php               scopeVisible() + initials accessor (fallback avatar)
-app/Models/User.php                     Default Laravel user (password cast 'hashed')
-
-database/migrations/2026_11_25_000001_create_services_table.php
-database/migrations/2026_11_25_000002_create_team_members_table.php
-database/seeders/ServiceSeeder.php      6 sample services
-database/seeders/TeamMemberSeeder.php   8 sample members (placeholder names/roles)
-database/seeders/DatabaseSeeder.php     Test user + calls both seeders
-
-resources/views/layouts/app.blade.php   Base layout: head, fonts, CSS, header, flash message, @yield('content'), footer
-resources/views/partials/header.blade.php   Logo, nav, @guest Login/Register, @auth name/Logout
-resources/views/partials/footer.blade.php
-resources/views/home.blade.php          Includes sections in order
-resources/views/sections/hero.blade.php
-resources/views/sections/services.blade.php   @forelse ($services as $service) — no images in cards (removed on request)
-resources/views/sections/team.blade.php       @forelse ($teamMembers as $member) — circular photos
-resources/views/sections/contact.blade.php    Static placeholder form (not wired yet)
-resources/views/sections/newsletter.blade.php Static placeholder form (not wired yet)
-resources/views/auth/register.blade.php
-resources/views/auth/login.blade.php
-resources/views/account.blade.php       Private page (auth only)
-
-public/css/style.css                    All styles
-public/images/                          Assets from the MADHUB site (hashed filenames, e.g. logo = 8eeb8.png)
-public/adminer.php + tools/adminer/     Local DB browser (gitignored, never deploy)
+public/css/                                  style.css, home.css, contact.css
+public/images/                               Static images (hashed names from the MADHUB site; image1-5.png for work items)
+public/adminer.php + tools/adminer/          Local database browser (gitignored)
 ```
+
+---
+
+## Routes
+
+| Method | URL | Controller | Access |
+|---|---|---|---|
+| GET | `/` | HomeController@index | Public |
+| GET | `/contact` | ContactController@create | Public |
+| POST | `/contact` | ContactController@store | Public, `throttle:5,1` |
+| POST | `/newsletter` | NewsletterController@store | Public, `throttle:5,1` |
+| GET/POST | `/register` | RegisterController | Guests only |
+| GET/POST | `/login` | LoginController | Guests only, login `throttle:5,1` |
+| GET | `/account` | AccountController@show | Logged in |
+| POST | `/logout` | LoginController@destroy | Logged in |
+| — | `/admin` | Filament | Pending setup |
 
 ---
 
 ## Database tables
 
-| Table | Columns / notes |
-|---|---|
-| `services` | id, title, description, image (path relative to `public/`, currently unused in the view), link, sort_order, is_active, timestamps |
-| `team_members` | id, name, role, photo (path relative to `public/`), sort_order, is_active, timestamps |
-| `users` | Laravel default. Passwords stored as bcrypt hashes. Test user: `test@example.com` / `password` |
-| `sessions` | Active login sessions |
-| Others (Laravel defaults) | `migrations`, `password_reset_tokens`, `cache`, `cache_locks`, `jobs`, `job_batches`, `failed_jobs` |
-
-Images are stored as paths (e.g. `images/842b4.png`) and rendered with `asset()`.
-
----
-
-## How data reaches the page (the Laravel flow)
-
-1. **Migration** creates the table structure (no data).
-2. **Seeder** inserts rows (sample data).
-3. **Model** represents the table; Eloquent translates `Service::visible()->get()` to
-   `SELECT * FROM services WHERE is_active = 1 ORDER BY sort_order`.
-4. **Controller** (`HomeController@index`) runs the query and passes `$services` / `$teamMembers` to the view.
-5. **Route** `/` → `HomeController@index`.
-6. **Blade view** loops with `@forelse ... @empty ... @endforelse` (`$loop->iteration` ≈ Liquid `forloop.index`).
-
-Simpler alternative (valid for tiny pages): query directly inside a route closure, skipping controller and scope.
-`php artisan make:model Name -msc` generates model + migration + seeder + controller in one go.
-
----
-
-## Authentication (built by hand, no starter kit)
-
-- Routes: `/register`, `/login` (middleware `guest`), `/account`, `POST /logout` (middleware `auth`).
-- Login is rate-limited: `throttle:5,1` (5 attempts per minute).
-- `$request->validate()` returns to the form with `@error` messages and `old()` input on failure.
-- `@csrf` required in every POST form.
-- `Auth::login()`, `Auth::attempt()`, session `regenerate()` on login, `invalidate()` + `regenerateToken()` on logout.
-- Flash messages via `->with('status', '...')`, shown in the layout.
-- Not built yet: password reset, email verification.
-
----
-
-## Assets
-
-- Static assets go in `public/` (`public/images`, `public/js`, `public/fonts`) and are referenced with `{{ asset('images/file.png') }}`.
-- User-uploaded files (future) go in `storage/app/public/` + `php artisan storage:link`.
-
----
-
-## Useful commands
-
-```
-php artisan serve                     # Run the site at http://127.0.0.1:8000
-php artisan migrate                   # Run new migrations only
-php artisan migrate --seed            # Migrate + seed
-php artisan migrate:fresh --seed      # Drop everything, recreate and seed (destroys data)
-php artisan migrate:rollback          # Undo the last batch of migrations
-php artisan make:migration add_x_to_y_table --table=y   # New migration to alter a table
-php artisan db:show                   # List tables
-php artisan db:table services         # Show a table's columns
-php artisan tinker                    # Interactive PHP console, e.g. App\Models\User::all();
-```
-
-Visual DB browser: http://127.0.0.1:8000/adminer.php → click **Login** with empty fields (localhost only).
-Desktop alternatives: DB Browser for SQLite, TablePlus, VS Code "SQLite Viewer".
-
-### Adding a column (correct way)
-
-1. `php artisan make:migration add_subtitle_to_services_table --table=services`
-2. In `up()`: `$table->string('subtitle')->nullable()->after('title');` — in `down()`: `$table->dropColumn('subtitle');`
-3. `php artisan migrate`
-4. Add the field to the model's `$fillable` and use it in the view.
-
-Editing columns directly in Adminer works for quick tests but is lost on `migrate:fresh` and not shared with the team.
-
----
-
-## Pending / next steps (only when asked)
-
-- Contact form: save to a `contact_messages` table (+ optional email to the log mailer).
-- Newsletter: save to a `subscribers` table with unique email validation.
-- SEO: per-page title / meta description / Open Graph, canonical, JSON-LD, sitemap.
-- Optional admin panel: Filament at `/admin`.
-
----
-
-## Key takeaways from the discussion
-
-### Blade
-Blade is Laravel's templating language, almost 1:1 with Liquid:
-`{{ $x }}` ↔ `{{ x }}`, `@foreach` ↔ `{% for %}`, `@if` ↔ `{% if %}`, `@include` ↔ `{% render %}`, `@extends` ↔ `layout`. `{{ }}` escapes output automatically.
-
-### Composer vs npm
-Composer = PHP packages (`vendor/`). npm = frontend tooling (Vite, Sass) only needed to compile SCSS/JS. Plain CSS removes the need for npm entirely.
-
-### SSR
-Laravel renders full HTML on the server (good for SEO). This is not unique to Laravel: WordPress, Shopify and Next.js (Server Components, SSR/SSG/ISR + Metadata API) do it too. The SEO advantage only applies against a client-side SPA (plain React/Vite).
-
-### Laravel vs Next.js + MongoDB
-
-| Criteria | Laravel + SQL | Next.js + MongoDB |
+| Table | Columns / notes | Used by |
 |---|---|---|
-| Language | PHP + Blade | JavaScript/TypeScript end to end |
-| Learning curve | PHP, Blade, Eloquent to learn | Stack already known (React, Next, Atlas) |
-| SSR / SEO | Yes | Yes, plus SSG and ISR |
-| SEO metadata | Manual in layout | Built-in Metadata API, sitemap.ts, robots.ts |
-| Interactivity / animations | Separate JS (or Livewire/Alpine) | Native React, Framer Motion, GSAP |
-| Database | SQL; MongoDB via extra package | Native MongoDB |
-| Auth, mail, queues, validation | Built in | Separate libraries (Auth.js, Resend, Zod) |
-| Client admin panel | Filament | Payload CMS (inside Next, MongoDB) |
-| Hosting | Cheap PHP hosting / VPS | Vercel + MongoDB Atlas (free tiers) |
-| Best for | Backend-heavy systems (users, roles, payments, jobs) | Websites/landings with polished UI and dynamic content |
+| `testimonials` | name, role, quote, photo, photo_position, logo, logo_alt, logo_width, logo_height, logo_blend, logo_crop (json), sort_order, is_active | Home (TestimonialsSection) |
+| `services` | title, description, image, link, sort_order, is_active | Seeded; not shown on the current home (home services come from `data.js`) |
+| `team_members` | name, role, photo, sort_order, is_active (+ `initials` accessor) | Seeded; not shown on the current home |
+| `contact_messages` | name, email, message | Contact form |
+| `subscribers` | email (unique) | Newsletter form |
+| `users` | Laravel default, bcrypt passwords. Test user `test@example.com` / `password` | Register, login, account |
+| `sessions`, `cache`, `jobs`, `migrations`… | Laravel internals | — |
 
-Conclusion: Laravel shines for data-heavy systems with business logic; for nice-looking marketing sites and landing pages, Next.js (+ a headless CMS) is a better fit. The user's preference for MADHUB is **Next.js + MongoDB**. Hybrid option: Laravel as API/backend + Next as frontend.
+Images are stored as paths relative to `public/` and turned into URLs with `asset()` in the controller.
+
+**Content split today**: testimonials come from the database; most other home content is static in `resources/js/home/data.js`. Content the client should edit moves to the database and gets a Filament screen.
+
+---
+
+## Filament (next step)
+
+`filament/filament ^4.0` is in composer.json. Still to do:
+
+1. `php artisan filament:install --panels` → `app/Providers/Filament/AdminPanelProvider.php`, panel at `/admin`.
+2. `php artisan make:filament-user` → first admin.
+3. `User` implements `FilamentUser::canAccessPanel()`. Because the site has public registration, add an `is_admin` boolean to `users` (new migration) and allow only admins.
+4. Resources: Testimonial, Service, TeamMember (editable, image uploads on the `public` disk + `php artisan storage:link`), ContactMessage and Subscriber (read-only).
+5. Controllers map uploaded images with `Storage::disk('public')->url()` and seeded ones (`images/…`) with `asset()`.
+
+Filament keeps its own look and never touches the Vue site or `public/css`.
+
+---
+
+## Commands
+
+All `php` and `npm` commands run inside the project folder.
+
+```
+php artisan serve                     # Site at http://127.0.0.1:8000
+npm run dev                           # Vite: hot reload + SSR in development (port 5173)
+npm run build                         # Client + SSR bundles (public/build, bootstrap/ssr)
+php artisan inertia:start-ssr         # SSR server after a build (port 13714, internal)
+php artisan migrate                   # New migrations only
+php artisan db:seed --class=XSeeder   # Seed one table (plain db:seed duplicates rows)
+php artisan migrate:fresh --seed      # Rebuild everything (deletes all data)
+php artisan make:model Name -ms       # Model + migration + seeder
+php artisan db:show                   # List tables
+php artisan tinker                    # e.g. App\Models\ContactMessage::all();
+```
+
+Database browser: http://127.0.0.1:8000/adminer.php (opens directly, no login locally).
+
+---
+
+## `.env` modes
+
+| Variable | Development | Demo link (tunnel) |
+|---|---|---|
+| `APP_URL` | `http://localhost` | `https://<words>.trycloudflare.com` (no trailing slash, changes every run) |
+| `APP_DEBUG` | `true` | `false` |
+
+Edit the existing lines; never add duplicates (the first occurrence wins). Other keys stay the same in both modes, including `ADMINER_USER` / `ADMINER_PASSWORD` (tunnel access to Adminer).
+
+---
+
+## Sharing a demo link (Cloudflare Tunnel)
+
+1. Stop `npm run dev`; delete `public/hot` if it remains.
+2. `npm run build`.
+3. Terminals: `php artisan serve` · `php artisan inertia:start-ssr` · `cloudflared tunnel --url http://127.0.0.1:8000`.
+4. Put the printed URL in `APP_URL`, set `APP_DEBUG=false`.
+5. To show Vue changes through the tunnel: `npm run build` again, or `npx vite build --watch`. PHP and `public/css` changes apply instantly.
+6. Back to development: restore the `.env` development values and run `npm run dev`.
+
+Adminer through the tunnel shows an English "Database access" sign-in (credentials from `.env`); locally it opens directly. Never give Adminer to a client: Filament is the client tool.
+
+---
+
+## Production (not set up)
+
+Needs a host that runs PHP and Node together (Laravel Cloud, Forge + VPS, Railway, Render). Not shared PHP hosting, not Netlify/Vercel. Switch to MySQL/PostgreSQL, `APP_DEBUG=false`, keep the SSR process running under a monitor, never deploy Adminer.
+
+---
+
+## Decisions and context
+
+- Laravel was chosen by the team to leave WordPress and page builders. For pure marketing sites the user prefers Next.js + MongoDB; Laravel + Inertia + Vue + Filament is the base for projects that need a client admin and backend logic.
+- WordPress headless (wp-admin as CMS, Vue/Next frontend) is the alternative when a client already works in WordPress; backend plugins (ACF, SEO, WooCommerce data) work through the API, frontend plugins and page builders do not.
+- SSR is mandatory for public pages; Next.js offers the same, so SEO is not a differentiator between the two.

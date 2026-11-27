@@ -47,6 +47,18 @@ return [
             'report' => false,
         ],
 
+        // Site images live in public/images and are stored as "images/file.png".
+        // The URL is root-relative so admin thumbnails load on whatever host
+        // the browser is using (APP_URL is often http://localhost with no port).
+        'site' => [
+            'driver' => 'local',
+            'root' => public_path(),
+            'url' => '',
+            'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),
